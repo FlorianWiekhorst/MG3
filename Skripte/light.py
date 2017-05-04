@@ -3,28 +3,62 @@ import time
 import socket 
 import os
 
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-P = 7
+Light = [7, 31, 32, 33, 35, 36, 37, 38, 40]
+prev_Light = [1, 1, 1, 1, 1, 1, 1, 1, 1]
+start_Light = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
+average = 0
+
+start = True
+average_bool = True
+
+loopbool = True
 
 GPIO.setmode(GPIO.BOARD)
 
 
 
 def rc_time(pin):
-    reading = 0
-    GPIO.setup(P, GPIO.OUT)
-    GPIO.output(P, GPIO.LOW)
-    time.sleep(0.1)
-    GPIO.setup(P, GPIO.IN)
-    while GPIO.input(P) == GPIO.LOW:
-        reading += 1
-    return reading
+	reading = 0
+	GPIO.setup(pin, GPIO.OUT)
+	GPIO.output(pin, GPIO.LOW)
+	time.sleep(0.5)
+	GPIO.setup(pin, GPIO.IN)
+	while GPIO.input(pin) == GPIO.LOW:
+		reading += 1
+	return reading
 
 try:
-    while True:
-        print(rc_time(P))
+	while True:
+		for i in range(9):
+			temp = rc_time(Light[i])
+			if (start == True):
+				start_Light[i] = temp
+				print("Start {}: {}".format(i,start_Light[i]))
+			elif (prev_Light[i] != temp and average > 0):
+				prev_Light[i] = temp
+				print("{}: {}".format(i,temp))
+				if (temp > (2 * average)):
+					print("{}: {}".format(i,1))
+					sock.sendto(str(i).encode("utf-8"),("192.168.0.208", 40))
+				else:
+					print("{}: {}".format(i,0))
+				
+				
+		start = False	
+		if (start == False and average_bool == True):
+			for i in range(9):
+				average += start_Light[i]
+			average /= 9
+			average_bool = False
+			print("Average: {}".format(average))
+			
+	#while loopbool == True:
+		#sock.sendto(str(value).encode("utf-8"),("192.168.0.208", 40))
+		#time.sleep(0.1)
 except KeyboardInterrupt:
-    pass
+	pass
 finally: 
-    GPIO.cleanup()        
+	GPIO.cleanup()        
