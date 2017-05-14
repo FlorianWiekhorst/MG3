@@ -2,10 +2,11 @@ import RPi.GPIO as GPIO
 import time 
 import socket 
 import os
+import thread
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-Light = [7, 31, 32, 33, 35, 36, 37, 38, 40]
+Light = [32, 40, 37, 7, 38, 36, 31, 35, 33]
 prev_Light = [1, 1, 1, 1, 1, 1, 1, 1, 1]
 start_Light = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -42,7 +43,7 @@ try:
 				print("{}: {}".format(i,temp))
 				if (temp > (2 * average)):
 					print("{}: {}".format(i,1))
-					sock.sendto(str(i).encode("utf-8"),("192.168.0.208", 40))
+					sock.sendto(str(i).encode("utf-8"),("192.168.0.21", 40))
 				else:
 					print("{}: {}".format(i,0))
 				
